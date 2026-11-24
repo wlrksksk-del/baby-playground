@@ -97,10 +97,10 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
 .demo-note b { color: var(--ink); }
 .foot { text-align: center; font-size: 11.5px; color: #B4AAB8; line-height: 1.8; padding-top: 18px; }
 
-/* 보호자 문: 3초 길게 누르기 */
+/* 보호자 문: 2초 길게 누르기 (시간을 바꾸면 아래 transition 시간과 HOLD_MS를 함께 바꿀 것) */
 .hold { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 4px; padding: 9px 14px; border-radius: 999px; background: var(--paper); font-size: 12.5px; font-weight: 700; color: var(--ink2); box-shadow: 0 2px 0 var(--line), 0 6px 12px -8px rgba(90,60,30,.3); touch-action: none; }
 .hold::before { content: ''; position: absolute; inset: 0; background: var(--green-bg); transform: scaleX(0); transform-origin: left; }
-.hold.pressing::before { transition: transform 3s linear; transform: scaleX(1); }
+.hold.pressing::before { transition: transform 2s linear; transform: scaleX(1); }
 .hold span { position: relative; }
 
 /* 신뢰 안내 카드 */
@@ -198,7 +198,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
 .tr-item span { font-size: 13px; font-weight: 700; color: var(--ink2); }
 .tr-item .star { position: absolute; top: 6px; right: 8px; font-size: 15px; font-style: normal; }
 .tr-item.yellow { --fg: var(--yellow-bd); } .tr-item.blue { --fg: var(--blue-bd); }
-.tr-item.green { --fg: var(--green-bd); } .tr-item.purple { --fg: var(--purple-bd); }
+.tr-item.green { --fg: var(--green-bd); } .tr-item.purple { --fg: var(--purple-bd); } .tr-item.violet { --fg: var(--violet-bd); }
 .tr-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 14px); }
 .tr-info { display: flex; align-items: center; gap: 12px; }
 .tr-name { font-family: var(--display); font-weight: 700; font-size: 28px; line-height: 1.2; }
@@ -207,8 +207,30 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
 .tr-say:active { transform: translateY(2px); }
 .tr-board { position: relative; flex: none; background: var(--paper); border-radius: 28px; box-shadow: 0 0 0 2px var(--line), var(--shadow-amb); touch-action: none; }
 .tr-board canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-.tr-head { position: absolute; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; background: rgba(255,212,94,.45); border: 3px solid #fff; box-shadow: 0 0 0 3px var(--yellow-bd); pointer-events: none; animation: pulse 1.2s ease-in-out infinite; }
+.tr-head { position: absolute; display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; margin: -40px 0 0 -40px; font-size: 66px; line-height: 1; filter: drop-shadow(0 3px 3px rgba(60,40,20,.3)); pointer-events: none; animation: pulse 1.2s ease-in-out infinite; }
+.tr-head.go { animation: wiggle .32s ease-in-out infinite; }
 .tr-head.nudge { animation: nudge .45s ease, pulse 1.2s ease-in-out .45s infinite; }
+.tr-board canvas.tr-fx { pointer-events: none; }
+.tr-card { position: absolute; inset: 5% 8% 17%; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2%; background: var(--paper); border-radius: 26px; box-shadow: 0 0 0 4px var(--yellow-bd), 0 14px 30px -10px rgba(80,60,30,.4); cursor: pointer; animation: cardPop .5s cubic-bezier(.2,1.4,.4,1) both; }
+.tr-card-ch { position: absolute; top: 4%; left: 6%; font-family: var(--display); font-weight: 700; font-size: calc(var(--side) * .1); line-height: 1; color: var(--ink2); }
+.tr-card-em { font-size: calc(var(--side) * .36); line-height: 1.1; }
+.tr-card-word { font-family: var(--display); font-weight: 700; font-size: calc(var(--side) * .085); line-height: 1.2; text-align: center; padding: 0 6%; color: var(--ink); }
+@keyframes cardPop { 0% { transform: scale(.4) rotate(-6deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+.vc-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; max-height: 60vh; overflow-y: auto; }
+.vc-row { display: flex; align-items: center; gap: 8px; background: var(--soft); border-radius: 16px; padding: 8px 10px; }
+.vc-row.rec { box-shadow: inset 0 0 0 2px var(--coral-bd); background: #FFF0EC; }
+.vc-g { width: 44px; height: 44px; flex: none; color: var(--purple-bd); }
+.vc-g svg { width: 100%; height: 100%; display: block; }
+.vc-t { flex: 1; min-width: 0; }
+.vc-t b { display: block; font-size: 15px; }
+.vc-t small { display: block; font-size: 11.5px; color: var(--ink2); line-height: 1.4; }
+.vc-btn { width: 44px; height: 44px; flex: none; border-radius: 50%; background: var(--paper); font-size: 18px; box-shadow: 0 2px 0 var(--line); }
+.vc-btn:disabled { opacity: .35; }
+.vc-btn.file-btn { display: inline-flex; align-items: center; justify-content: center; }
+.vc-thumb { width: 44px; height: 44px; flex: none; border-radius: 12px; object-fit: cover; display: flex; align-items: center; justify-content: center; font-size: 28px; line-height: 1; background: var(--paper); }
+.tr-card-img { width: calc(var(--side) * .42); height: calc(var(--side) * .42); object-fit: cover; border-radius: 22px; box-shadow: 0 6px 16px -6px rgba(60,40,20,.4); }
+.vc-btn.on { background: #FFD9D4; animation: pulse 1s ease-in-out infinite; }
+@keyframes wiggle { 0%, 100% { transform: rotate(-10deg) scale(1.02); } 50% { transform: rotate(10deg) scale(1.12); } }
 .tr-ctrl { display: flex; gap: 10px; width: 100%; max-width: 440px; }
 .tr-ctrl .btn { min-height: 50px; padding: 10px 8px; font-size: 17px; }
 @media (orientation: landscape) {
@@ -478,17 +500,18 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
         h('p', {}, '소중한 가족 사진은 인터넷에 올리지 않고 내 폰에만 안전하게 보관돼요')));
   }
 
+  const HOLD_MS = 2000; // 보호자 버튼을 눌러야 하는 시간
   function holdButton(label, onDone) {
-    const b = h('button', { cls: 'hold', 'aria-label': label + ' (3초 길게 누르기)' }, h('span', {}, '🔒 ' + label));
+    const b = h('button', { cls: 'hold', 'aria-label': label + ` (${HOLD_MS / 1000}초 길게 누르기)` }, h('span', {}, '🔒 ' + label));
     let t = null, fired = false;
     const cancel = () => { clearTimeout(t); t = null; b.classList.remove('pressing'); };
     b.addEventListener('pointerdown', (e) => {
       e.stopPropagation(); fired = false;
       try { b.setPointerCapture(e.pointerId); } catch (_) {}
       b.classList.add('pressing');
-      t = setTimeout(() => { fired = true; cancel(); onDone(); }, 3000);
+      t = setTimeout(() => { fired = true; cancel(); onDone(); }, HOLD_MS);
     });
-    b.addEventListener('pointerup', () => { if (t && !fired) toast('보호자 메뉴는 3초 동안 꾹 눌러주세요'); cancel(); });
+    b.addEventListener('pointerup', () => { if (t && !fired) toast(`보호자 메뉴는 ${HOLD_MS / 1000}초 동안 꾹 눌러주세요`); cancel(); });
     b.addEventListener('pointercancel', cancel);
     b.addEventListener('contextmenu', (e) => e.preventDefault());
     return b;
@@ -512,7 +535,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
     { id: 'puzzle', em: '🧩', label: '사진 퍼즐', sub: '진짜 퍼즐 조각으로 맞춰요', color: 'yellow', wide: true, need: 1, to: () => go('level') },
     { id: 'person', em: '🙋', label: '빈자리 퍼즐', sub: '빈 곳에 쏙 넣어요', color: 'blue', need: 1, to: () => go('pick', { target: 'person' }) },
     { id: 'body', em: '👀', label: '어디 있을까', sub: '눈·코·입 찾기', color: 'green', need: 1, to: () => go('pick', { target: 'body' }) },
-    { id: 'trace', em: '✏️', label: '따라 그리기', sub: '선 · 한글 · ABC', color: 'purple', to: () => go('traceMenu') },
+    { id: 'trace', em: '✏️', label: '따라 그리기', sub: '선 · 한글 · ABC · 숫자', color: 'purple', to: () => go('traceMenu') },
     { id: 'album', em: '📖', label: '같이 봐요', sub: '사진 넘겨보기', color: 'violet', need: 1, to: () => go('album', { albumIdx: 0 }) },
   ];
   SCREENS.home = () => {
@@ -532,7 +555,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
           } },
             h('span', { cls: 'em' }, g.em),
             h('div', {}, h('div', { cls: 'label' }, g.label), h('div', { cls: 'sub' }, g.sub))))),
-        usingDemo && h('div', { cls: 'demo-note' }, nothing ? '보여줄 사진이 없어요. 오른쪽 위 ' : '지금은 예시 그림이에요. 오른쪽 위 ', h('b', {}, '🔒 보호자'), ' 버튼을 3초 꾹 눌러 우리 가족 사진을 넣어주세요.'),
+        usingDemo && h('div', { cls: 'demo-note' }, nothing ? '보여줄 사진이 없어요. 오른쪽 위 ' : '지금은 예시 그림이에요. 오른쪽 위 ', h('b', {}, '🔒 보호자'), ` 버튼을 ${HOLD_MS / 1000}초 꾹 눌러 우리 가족 사진을 넣어주세요.`),
         h('div', { cls: 'foot' }, '🔒 사진은 이 기기 안에서만 사용돼요 · 업로드하지 않아요'))));
   };
 
@@ -662,6 +685,8 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
           h('h2', {}, '🧩 퍼즐 조각 수'),
           h('p', { cls: 'hint' }, '처음에는 7단계가 모두 켜져 있어요. 아이 화면에서 숨기고 싶은 단계만 꺼주세요.'),
           lvChips),
+        voiceSection(),
+        photoSection(),
         h('section', { cls: 'sec' },
           h('h2', {}, '✨ 도움 · 효과'),
           h('p', { cls: 'hint' }, '밑그림: 퍼즐 판에 사진을 흐리게 깔아둬요. 폭죽: 다 맞추면 짧게 터져요.'),
@@ -978,12 +1003,96 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
   const TRACE_BAND = 13;    // 연한 길(밴드) 두께
   const TRACE_INK = 10;     // 아이가 칠한 색 선 두께
   const TRACE_TICK = 20;    // 이만큼 나아갈 때마다 작은 소리
-  const TRACE_COLORS = ['#F2994A', '#4FA8E0', '#5BBF72', '#B36BD9', '#F0B429'];
+  // 손가락을 따라다니는 안내 캐릭터와, 그 캐릭터가 남기는 자취(칠해지는 선) 색. 글자를 열 때마다 무작위로 바뀐다.
+  // fx: 지나간 자리에 흩날리는 효과. emoji(이모지가 떨어짐) · flame(불꽃) · smoke(연기/먼지) · bubble(비눗방울) · rainbow(무지개 방울) · prints(발자국)
+  const TRACERS = [
+    { em: '🐝', ink: '#F2B01E', fx: { kind: 'emoji', list: ['🌼', '🌸', '🍯'] } },
+    { em: '🚂', ink: '#4FA8E0', fx: { kind: 'smoke', color: '235,235,242' } },
+    { em: '🚀', ink: '#F26B5B', fx: { kind: 'flame' } },
+    { em: '🐢', ink: '#5BBF72', fx: { kind: 'prints' } },
+    { em: '🐛', ink: '#8CC63F', fx: { kind: 'emoji', list: ['🍃', '🌿', '🍀'] } },
+    { em: '🧚', ink: '#B36BD9', fx: { kind: 'emoji', list: ['✨', '⭐', '💫'] } },
+    { em: '🐞', ink: '#E5484D', fx: { kind: 'emoji', list: ['❤️', '💖', '💕'] } },
+    { em: '🐌', ink: '#C8956A', fx: { kind: 'bubble' } },
+    { em: '🦋', ink: '#4F9BE8', fx: { kind: 'emoji', list: ['🌷', '🌸', '💮'] } },
+    { em: '🐠', ink: '#26B5C9', fx: { kind: 'bubble' } },
+    { em: '🚗', ink: '#F2994A', fx: { kind: 'smoke', color: '222,190,142' } },
+    { em: '🛸', ink: '#7C6FE0', fx: { kind: 'emoji', list: ['⭐', '🌟', '🌙'] } },
+    { em: '🐥', ink: '#F5C634', fx: { kind: 'emoji', list: ['🌻', '🌼', '🌾'] } },
+    { em: '🦄', ink: '#E879B9', fx: { kind: 'rainbow' } },
+    { em: '🐙', ink: '#9B6BD1', fx: { kind: 'bubble' } },
+    { em: '🚜', ink: '#4CAF50', fx: { kind: 'smoke', color: '214,176,128' } },
+  ];
+  const FX_STEP = { emoji: 32, flame: 15, smoke: 24, bubble: 28, rainbow: 20, prints: 30 }; // 이만큼(단위) 나아갈 때마다 효과 하나
+  const TRACE_FX = true;    // 자취 효과(입자) 스위치. false면 캐릭터만 움직인다
+  const FX_MAX = 180;       // 화면에 동시에 떠 있는 효과 개수 상한
+  let lastTracer = -1;
+  const pickTracer = () => {
+    let i; do { i = Math.floor(Math.random() * TRACERS.length); } while (i === lastTracer); // 바로 앞과 같은 캐릭터는 피한다
+    lastTracer = i; return TRACERS[i];
+  };
   const SVGNS = 'http://www.w3.org/2000/svg';
 
   const L = (name, d) => ({ name, say: name, d: [d] });
   const K = (ch, name, word, ...d) => ({ ch, name, say: name, word, d });
   const E = (ch, name, word, ...d) => ({ ch, name, say: ch, word, d });
+  const N = (ch, name, word, ...d) => ({ ch, name, say: name, word, d });
+
+  // 숫자: 1~9와 0은 낱자 그대로, 10~100은 낱자 모양을 같은 비율로 줄여 나란히 이어 붙여 만든다.
+  const NUM_SPAN = { 0: [24, 76], 1: [30, 54], 2: [24, 78], 3: [24, 76], 4: [18, 84], 5: [22, 76], 6: [26, 74], 7: [22, 78], 8: [26, 74], 9: [24, 72] }; // 낱자별 가로 범위
+  const NUM_AREA_W = 92;    // 이어 붙인 숫자가 차지할 수 있는 최대 가로
+  const SINO = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+  const PATH_ARGS = { M: 2, L: 2, H: 1, V: 1, Q: 4, A: 7 };
+  // 절대 좌표 path를 s배 줄이고 (dx, dy)만큼 옮긴다 (아크는 반지름도 함께 줄인다)
+  function mapPath(d, s, dx, dy) {
+    const tok = d.match(/[A-Z]|-?\d*\.?\d+/g), out = [], f = (v) => +v.toFixed(2);
+    for (let i = 0; i < tok.length;) {
+      const cmd = tok[i++], n = PATH_ARGS[cmd];
+      while (i < tok.length && !/[A-Z]/.test(tok[i])) {
+        const a = tok.slice(i, i + n).map(Number); i += n;
+        let r;
+        if (cmd === 'H') r = [a[0] * s + dx];
+        else if (cmd === 'V') r = [a[0] * s + dy];
+        else if (cmd === 'A') r = [a[0] * s, a[1] * s, a[2], a[3], a[4], a[5] * s + dx, a[6] * s + dy];
+        else r = a.map((v, k) => v * s + (k % 2 ? dy : dx));
+        out.push(cmd + r.map(f).join(' '));
+      }
+    }
+    return out.join(' ');
+  }
+  function buildNumItems() {
+    const ones = [
+      N('1', '하나', '🍎 사과 한 개', 'M30 30 L54 12 V88'),
+      N('2', '둘', '🍓 딸기 두 개', 'M26 30 Q26 12 50 12 Q74 12 74 32 Q74 48 50 66 L24 88 H78'),
+      N('3', '셋', '🍪 쿠키 세 개', 'M26 22 Q34 12 50 12 Q72 12 72 30 Q72 48 46 48 Q76 48 76 68 Q76 88 50 88 Q32 88 24 76'),
+      N('4', '넷', '🚗 자동차 네 대', 'M60 12 L18 64 H84', 'M60 12 V88'),
+      N('5', '다섯', '⭐ 별 다섯 개', 'M72 12 H30 L26 48 Q38 40 52 40 Q76 40 76 64 Q76 88 50 88 Q32 88 22 76'),
+      N('6', '여섯', '🐞 무당벌레 여섯 마리', 'M68 14 Q30 24 26 60 Q26 88 50 88 Q74 88 74 66 Q74 46 50 46 Q28 46 26 64'),
+      N('7', '일곱', '🌈 무지개 일곱 색깔', 'M22 12 H78 L40 88'),
+      N('8', '여덟', '🐙 문어 다리 여덟 개', 'M50 12 Q28 12 28 30 Q28 46 50 50 Q74 54 74 70 Q74 88 50 88 Q26 88 26 70 Q26 54 50 50 Q72 46 72 30 Q72 12 50 12'),
+      N('9', '아홉', '🎈 풍선 아홉 개', 'M72 34 Q72 12 50 12 Q28 12 28 32 Q28 52 50 52 Q72 52 72 34 V62 Q72 88 46 88 Q32 88 24 78'),
+    ];
+    const zero = N('0', '영', '⭕ 동그라미', 'M50 12 A26 38 0 0 0 50 88 A26 38 0 0 0 50 12');
+    const glyph = {};
+    [...ones, zero].forEach((it) => { glyph[it.ch] = it.d; });
+    // 10은 '열', 11 이상은 '십일 · 이십 · 백'처럼 한자어로 읽는다
+    const readNum = (n) => (n === 10 ? '열' : n === 100 ? '백' : (n >= 20 ? SINO[Math.floor(n / 10)] : '') + (n >= 10 ? '십' : '') + SINO[n % 10]);
+    const compose = (n) => {
+      const digs = String(n).split(''), gap = digs.length > 2 ? 8 : 12;
+      const sumW = digs.reduce((a, c) => a + NUM_SPAN[c][1] - NUM_SPAN[c][0], 0);
+      const s = Math.min(1, (NUM_AREA_W - gap * (digs.length - 1)) / sumW);
+      let x = 50 - (sumW * s + gap * (digs.length - 1)) / 2;
+      const d = [];
+      digs.forEach((c) => {
+        const [a, b] = NUM_SPAN[c];
+        glyph[c].forEach((p) => d.push(mapPath(p, s, x - a * s, 50 - 50 * s)));
+        x += (b - a) * s + gap;
+      });
+      return N(String(n), readNum(n), undefined, ...d);
+    };
+    const big = Array.from({ length: 91 }, (_, k) => compose(k + 10));
+    return [...ones, ...big, zero];
+  }
   const O_RING = 'M50 12 A30 38 0 0 0 50 88 A30 38 0 0 0 50 12';
   const P_BOWL = 'M28 12 H52 Q74 12 74 32 Q74 52 52 52 H28';
   const TRACE_CATS = [
@@ -1054,6 +1163,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
       E('Y', '와이', '🪀 Yo-yo', 'M22 12 L50 50', 'M78 12 L50 50 V88'),
       E('Z', '제트','🦓 Zebra', 'M22 12 H78 L22 88 H78'),
     ] },
+    { id: 'num', label: '숫자 따라쓰기', sub: '1 ~ 100', em: '123', txt: true, color: 'violet', lang: 'ko-KR', items: buildNumItems() },
   ];
   const traceCat = () => TRACE_CATS.find((c) => c.id === S.traceCat) || TRACE_CATS[0];
   const traceTitle = (cat, it) => (cat.id === 'line' ? it.name : `${it.ch} · ${it.name}`);
@@ -1082,14 +1192,218 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
     });
     return svg;
   }
+
+  // ---------------------------------------------------------------- 음성 (1순위: 부모 녹음, 2순위: 기기의 가장 자연스러운 합성 음성)
+  let ttsVoices = [];
+  const loadVoices = () => { try { ttsVoices = speechSynthesis.getVoices(); } catch (_) {} };
+  if (window.speechSynthesis) { loadVoices(); try { speechSynthesis.addEventListener('voiceschanged', loadVoices); } catch (_) {} }
+  const normLang = (l) => (l || '').replace('_', '-').toLowerCase();
+  // 이름에 Natural/Neural(최신 신경망 음성)·Online·Premium이 붙은 음성을 우선한다. 기기마다 목록이 달라 점수로 고른다.
+  function bestVoice(lang) {
+    const want = normLang(lang), base = want.slice(0, 2);
+    const score = (v) => (/natural|neural/i.test(v.name) ? 8 : 0) + (/premium|enhanced|siri/i.test(v.name) ? 4 : 0) + (/online|google/i.test(v.name) ? 2 : 0) + (normLang(v.lang) === want ? 1 : 0);
+    return ttsVoices.filter((v) => normLang(v.lang).startsWith(base)).sort((a, b) => score(b) - score(a))[0] || null;
+  }
   function speak(text, lang) {
     if (!S.sound || !text || !window.speechSynthesis) return;
     try {
       speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = lang; u.rate = 0.85; u.pitch = 1.15;
+      const u = new SpeechSynthesisUtterance(text), v = bestVoice(lang);
+      u.lang = lang; u.rate = 0.9; u.pitch = 1.05;
+      if (v) u.voice = v;
       speechSynthesis.speak(u);
     } catch (_) {}
+  }
+
+  // 부모 녹음: 기기 안(IndexedDB)에만 저장한다. 키는 '카테고리:글자'라서 목록 순서가 바뀌어도 유지된다.
+  const VOICE_MAX_MS = 8000, VOICE_MIN_MS = 400;
+  const VOICE = { urls: new Map(), imgs: new Map(), audio: null, key: null, rec: null, timer: 0 }; // imgs: 단어카드 사진 (키가 'img:'로 시작)
+  const imgKey = (cat, it) => 'img:' + `${cat.id}:${it.ch || it.name}`;
+  const clipKey = (cat, it) => `${cat.id}:${it.ch || it.name}`;
+  const itemSpeech = (it) => (it.word ? `${it.say}. ${spokenWord(it)}` : it.say); // 부모가 말해 줄 문장 (끝났을 때 읽어 주는 문장과 같다)
+  let voiceDbP = null;
+  const voiceDb = () => voiceDbP || (voiceDbP = new Promise((resolve, reject) => {
+    try {
+      const rq = indexedDB.open('ugj-voice', 1);
+      rq.onupgradeneeded = () => rq.result.createObjectStore('clips');
+      rq.onsuccess = () => resolve(rq.result);
+      rq.onerror = () => reject(rq.error);
+    } catch (e) { reject(e); }
+  }));
+  const idbDo = async (mode, fn) => {
+    const db = await voiceDb();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction('clips', mode), out = fn(tx.objectStore('clips'));
+      tx.oncomplete = () => resolve(out && out.result);
+      tx.onerror = () => reject(tx.error);
+    });
+  };
+  function setClipUrl(key, blob) { // 녹음(urls)과 사진(imgs)은 같은 저장소를 쓰고 키 앞머리로 구분한다
+    const m = key.startsWith('img:') ? VOICE.imgs : VOICE.urls, old = m.get(key);
+    if (old) URL.revokeObjectURL(old);
+    if (blob) m.set(key, URL.createObjectURL(blob)); else m.delete(key);
+  }
+  async function clipSave(key, blob) { // 저장소를 못 쓰는 환경(시크릿 모드 등)이면 이번 접속에서만 들린다
+    setClipUrl(key, blob);
+    try { await idbDo('readwrite', (st) => st.put(blob, key)); return true; } catch (_) { return false; }
+  }
+  async function clipDelete(key) { setClipUrl(key, null); try { await idbDo('readwrite', (st) => st.delete(key)); } catch (_) {} }
+  async function clipClearAll(map) { for (const k of [...map.keys()]) await clipDelete(k); } // map: VOICE.urls(녹음) 또는 VOICE.imgs(사진)
+  async function clipLoadAll() {
+    try {
+      const db = await voiceDb();
+      await new Promise((resolve) => {
+        const cur = db.transaction('clips').objectStore('clips').openCursor();
+        cur.onsuccess = () => { const c = cur.result; if (c) { setClipUrl(c.key, c.value); c.continue(); } else resolve(); };
+        cur.onerror = () => resolve();
+      });
+    } catch (_) {}
+  }
+  clipLoadAll();
+
+  // 녹음된 소리가 있으면 재생하고 true를 돌려준다 (force: 소리 설정이 꺼져 있어도 보호자 확인용으로 재생)
+  function playClip(key, force) {
+    const url = VOICE.urls.get(key);
+    if (!url || (!S.sound && !force)) return false;
+    try {
+      if (window.speechSynthesis) speechSynthesis.cancel();
+      if (VOICE.audio) VOICE.audio.pause();
+      VOICE.audio = new Audio(url);
+      VOICE.audio.play().catch(() => {});
+      return true;
+    } catch (_) { return false; }
+  }
+  const sayItem = (cat, it, full) => { if (!playClip(clipKey(cat, it))) speak(full ? itemSpeech(it) : it.say, cat.lang); };
+
+  async function recStart(key, onEnd) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) throw new Error('unsupported');
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    if (VOICE.audio) VOICE.audio.pause();
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'].find((t) => MediaRecorder.isTypeSupported(t));
+    const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined), chunks = [], t0 = Date.now();
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+    rec.onstop = async () => {
+      stream.getTracks().forEach((t) => t.stop());
+      clearTimeout(VOICE.timer); VOICE.key = null; VOICE.rec = null;
+      if (Date.now() - t0 < VOICE_MIN_MS) toast('너무 짧아요. 다시 녹음해 주세요');
+      else toast((await clipSave(key, new Blob(chunks, { type: rec.mimeType || mime || 'audio/webm' }))) ? '녹음했어요 ✓' : '이번에만 들려요 (이 기기에 저장은 못 했어요)');
+      onEnd();
+    };
+    rec.start(); VOICE.key = key; VOICE.rec = rec;
+    VOICE.timer = setTimeout(() => { if (rec.state === 'recording') rec.stop(); }, VOICE_MAX_MS); // 깜빡 잊고 켜 둬도 자동으로 끝난다
+  }
+  const recStop = () => { if (VOICE.rec && VOICE.rec.state === 'recording') VOICE.rec.stop(); };
+
+  // 보호자 설정 안의 '목소리 녹음' 구역
+  function voiceSection() {
+    let catId = 'cons';
+    const chips = h('div', { cls: 'chips' }), list = h('div', { cls: 'vc-list' }), total = h('p', { cls: 'hint', css: { marginTop: '10px' } });
+    const cat = () => TRACE_CATS.find((c) => c.id === catId);
+    const count = (c) => c.items.filter((it) => VOICE.urls.has(clipKey(c, it))).length;
+    const refresh = () => { renderChips(); renderList(); };
+
+    function renderChips() {
+      chips.innerHTML = '';
+      TRACE_CATS.forEach((c) => chips.append(h('button', { cls: 'chip' + (c.id === catId ? ' on' : ''), onclick: () => { recStop(); catId = c.id; refresh(); } },
+        c.label.replace(' 따라쓰기', ''), h('small', {}, `${count(c)} / ${c.items.length}`))));
+      const all = TRACE_CATS.reduce((a, c) => a + count(c), 0);
+      total.textContent = all ? `녹음한 소리 ${all}개 · 이 기기 안에만 저장돼요` : '아직 녹음한 소리가 없어요. 녹음이 없는 글자는 기본 음성이 나와요.';
+    }
+    async function toggleRec(c, it) {
+      if (VOICE.rec) return recStop();
+      try { await recStart(clipKey(c, it), refresh); }
+      catch (e) { toast(e && e.name === 'NotAllowedError' ? '마이크 사용을 허용해 주세요' : '이 화면에서는 녹음을 쓸 수 없어요 (https 또는 localhost 주소에서 열어주세요)'); return; }
+      renderList();
+    }
+    function renderList() {
+      list.innerHTML = '';
+      const c = cat();
+      c.items.forEach((it) => {
+        const key = clipKey(c, it), has = VOICE.urls.has(key), on = VOICE.key === key, g = glyphSvg(it.d);
+        list.append(h('div', { cls: 'vc-row' + (on ? ' rec' : '') },
+          h('span', { cls: 'vc-g' }, g),
+          h('div', { cls: 'vc-t' }, h('b', {}, `${traceTitle(c, it)}${has ? ' ✓' : ''}`), h('small', {}, on ? '녹음 중… 다 말하면 ⏹을 눌러요' : `이렇게 말해 주세요: ${itemSpeech(it)}`)),
+          h('button', { cls: 'vc-btn' + (on ? ' on' : ''), 'aria-label': on ? '녹음 끝내기' : '녹음하기', onclick: () => toggleRec(c, it) }, on ? '⏹' : '🎤'),
+          h('button', { cls: 'vc-btn', 'aria-label': '녹음 듣기', disabled: !has, onclick: () => playClip(key, true) }, '▶'),
+          h('button', { cls: 'vc-btn', 'aria-label': '녹음 지우기', disabled: !has, onclick: async () => { await clipDelete(key); refresh(); } }, '🗑')));
+      });
+    }
+    refresh();
+    return h('section', { cls: 'sec' },
+      h('h2', {}, '🎙️ 목소리 녹음'),
+      h('p', { cls: 'hint' }, '부모님 목소리로 녹음하면 아이가 따라 쓸 때 기본 음성(기계 목소리) 대신 그 목소리가 나와요. 한 번에 최대 8초까지 녹음돼요. 🎤를 누르고 말한 뒤 ⏹을 눌러주세요.'),
+      chips, total, list,
+      h('button', { cls: 'btn yellow', css: { marginTop: '12px' }, onclick: async () => {
+        if (!VOICE.urls.size) return toast('지울 녹음이 없어요');
+        if (!confirm('녹음한 소리를 모두 지울까요?')) return;
+        await clipClearAll(VOICE.urls); refresh();
+      } }, '🗑 녹음 모두 지우기'));
+  }
+
+  // 사진 한 장을 가운데 정사각형으로 잘라 줄여서(최대 600px) 저장할 Blob으로 만든다. 열 수 없는 형식이면 null.
+  function photoToBlob(file) {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(file), im = new Image();
+      im.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+      im.onload = () => {
+        const side = Math.min(im.naturalWidth, im.naturalHeight), out = Math.min(600, side), c = document.createElement('canvas');
+        c.width = c.height = out;
+        c.getContext('2d').drawImage(im, (im.naturalWidth - side) / 2, (im.naturalHeight - side) / 2, side, side, 0, 0, out, out);
+        URL.revokeObjectURL(url);
+        c.toBlob((b) => resolve(b), 'image/jpeg', 0.88);
+      };
+      im.src = url;
+    });
+  }
+
+  // 보호자 설정 안의 '단어카드 사진' 구역: 단어마다 이모지 대신 보여 줄 진짜 사진을 고른다
+  function photoSection() {
+    const wordCats = TRACE_CATS.filter((c) => c.items.some((it) => it.word));
+    let catId = wordCats[0].id;
+    const chips = h('div', { cls: 'chips' }), list = h('div', { cls: 'vc-list' }), total = h('p', { cls: 'hint', css: { marginTop: '10px' } });
+    const cat = () => wordCats.find((c) => c.id === catId), words = (c) => c.items.filter((it) => it.word);
+    const count = (c) => words(c).filter((it) => VOICE.imgs.has(imgKey(c, it))).length;
+    const refresh = () => { renderChips(); renderList(); };
+
+    function renderChips() {
+      chips.innerHTML = '';
+      wordCats.forEach((c) => chips.append(h('button', { cls: 'chip' + (c.id === catId ? ' on' : ''), onclick: () => { catId = c.id; refresh(); } },
+        c.label.replace(' 따라쓰기', ''), h('small', {}, `${count(c)} / ${words(c).length}`))));
+      total.textContent = VOICE.imgs.size ? `넣은 사진 ${VOICE.imgs.size}장 · 이 기기 안에만 저장돼요` : '아직 넣은 사진이 없어요. 사진이 없는 단어는 이모지가 나와요.';
+    }
+    async function pick(c, it, file) {
+      if (!file) return;
+      const blob = await photoToBlob(file);
+      if (!blob) return toast('이 사진은 열 수 없어요. 다른 사진을 골라주세요');
+      toast((await clipSave(imgKey(c, it), blob)) ? '사진을 넣었어요 ✓' : '이번에만 보여요 (이 기기에 저장은 못 했어요)');
+      refresh();
+    }
+    function renderList() {
+      list.innerHTML = '';
+      const c = cat();
+      words(c).forEach((it, n) => {
+        const key = imgKey(c, it), url = VOICE.imgs.get(key), [pic, ...rest] = it.word.split(' ');
+        const input = h('input', { type: 'file', accept: 'image/*', id: `wp-${c.id}-${n}`, cls: 'file-input' });
+        input.addEventListener('click', (e) => e.stopPropagation());
+        input.addEventListener('change', () => { const f = input.files[0]; input.value = ''; pick(c, it, f); });
+        list.append(h('div', { cls: 'vc-row' },
+          url ? h('img', { cls: 'vc-thumb', src: url, alt: '' }) : h('span', { cls: 'vc-thumb' }, pic),
+          h('div', { cls: 'vc-t' }, h('b', {}, `${traceTitle(c, it)}${url ? ' ✓' : ''}`), h('small', {}, rest.join(' '))),
+          h('label', { cls: 'vc-btn file-btn', for: input.id, 'aria-label': url ? '사진 바꾸기' : '사진 고르기' }, '📷', input),
+          h('button', { cls: 'vc-btn', 'aria-label': '사진 지우기', disabled: !url, onclick: async () => { await clipDelete(key); refresh(); } }, '🗑')));
+      });
+    }
+    refresh();
+    return h('section', { cls: 'sec' },
+      h('h2', {}, '🖼️ 단어카드 사진'),
+      h('p', { cls: 'hint' }, '글자를 다 쓰면 나오는 단어카드에, 이모지 대신 우리 아이가 아는 진짜 사진을 보여줄 수 있어요. 사진은 가운데 정사각형으로 잘려서 저장돼요.'),
+      chips, total, list,
+      h('button', { cls: 'btn yellow', css: { marginTop: '12px' }, onclick: async () => {
+        if (!VOICE.imgs.size) return toast('지울 사진이 없어요');
+        if (!confirm('단어카드 사진을 모두 지울까요?')) return;
+        await clipClearAll(VOICE.imgs); refresh();
+      } }, '🗑 사진 모두 지우기'));
   }
 
   SCREENS.traceMenu = () => h('div', { cls: 'screen' },
@@ -1106,7 +1420,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
     return h('div', { cls: 'screen' },
       nav(cat.label.replace(' 따라쓰기', ''), () => go('traceMenu')),
       h('div', { cls: 'scroll' }, h('div', { cls: 'inner' },
-        h('div', { cls: 'lead' }, cat.id === 'line' ? '어떤 선을 그려볼까?' : '어떤 글자를 써볼까?'),
+        h('div', { cls: 'lead' }, cat.id === 'line' ? '어떤 선을 그려볼까?' : cat.id === 'num' ? '어떤 숫자를 써볼까?' : '어떤 글자를 써볼까?'),
         h('div', { cls: 'tr-grid' }, cat.items.map((it, i) =>
           h('button', { cls: `tr-item ${cat.color}`, 'aria-label': traceTitle(cat, it), onclick: () => { sndTap(); go('trace', { traceIdx: i }); } },
             glyphSvg(it.d),
@@ -1118,11 +1432,12 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
     const cat = traceCat(), n = cat.items.length, i = Math.min(S.traceIdx || 0, n - 1), it = cat.items[i];
     const strokes = it._pts || (it._pts = it.d.map(samplePath));
     const goItem = (j) => go('trace', { traceIdx: (j + n) % n });
-    const canvas = h('canvas'), head = h('div', { cls: 'tr-head' });
-    const board = h('div', { cls: 'tr-board' }, canvas, head);
+    const tracer = pickTracer();
+    const canvas = h('canvas'), fx = h('canvas', { cls: 'tr-fx', 'aria-hidden': 'true' }), head = h('div', { cls: 'tr-head', 'aria-hidden': 'true' }, tracer.em);
+    const board = h('div', { cls: 'tr-board' }, canvas, fx, head);
     const info = h('div', { cls: 'tr-info' },
       h('div', {}, h('div', { cls: 'tr-name' }, traceTitle(cat, it)), it.word && h('div', { cls: 'tr-word' }, it.word)),
-      h('button', { cls: 'tr-say', 'aria-label': '소리 듣기', onclick: () => speak(it.say, cat.lang) }, '🔊'));
+      h('button', { cls: 'tr-say', 'aria-label': '소리 듣기', onclick: () => sayItem(cat, it, true) }, '🔊'));
     const ctrl = h('div', { cls: 'tr-ctrl' },
       h('button', { cls: 'btn blue', onclick: () => { sndTap(); goItem(i - 1); } }, '◀ 이전'),
       h('button', { cls: 'btn yellow', onclick: () => { sndTap(); goItem(i); } }, '↺ 다시'),
@@ -1138,10 +1453,72 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
         const W = stage.clientWidth, H = stage.clientHeight;
         let side = W > H ? Math.min(H - 32, W - 360) : Math.min(W - 32, H - info.offsetHeight - ctrl.offsetHeight - 64);
         side = Math.max(160, Math.min(560, Math.floor(side)));
-        board.style.width = board.style.height = side + 'px';
-        const r = dpr(); canvas.width = canvas.height = Math.round(side * r); k = side / 100;
+        board.style.width = board.style.height = side + 'px'; board.style.setProperty('--side', side + 'px');
+        const r = dpr(); canvas.width = canvas.height = fx.width = fx.height = Math.round(side * r); k = side / 100;
         draw();
       }
+
+      // ---- 캐릭터 자취 효과: 지나간 자리에 입자를 흩뿌리고, 입자가 남아 있는 동안만 애니메이션을 돌린다
+      const parts = [], rnd = (a, b) => a + Math.random() * (b - a);
+      let fxRaf = 0, fxPrev = 0, fxHue = 0, fxFoot = 1, fxAcc = 0;
+      function puff(x, y, ang, burst) {
+        if (parts.length >= FX_MAX) return;
+        const f = tracer.fx, a = burst ? rnd(0, 6.283) : ang, sp = burst ? rnd(18, 46) : 0;
+        const p = { kind: f.kind, x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, age: 0, life: rnd(0.8, 1.3), size: rnd(6, 9), rot: rnd(-0.6, 0.6), em: '', color: f.color || '', hue: 0, wob: rnd(0, 6.28) };
+        switch (f.kind) {
+          case 'emoji': p.em = f.list[Math.floor(Math.random() * f.list.length)]; p.life = rnd(0.9, 1.5); if (!burst) { p.vx = rnd(-5, 5); p.vy = rnd(2, 9); } break;
+          case 'flame': p.size = rnd(4, 6); p.life = rnd(0.35, 0.6); if (!burst) { p.vx = -Math.cos(ang) * 16 + rnd(-5, 5); p.vy = -Math.sin(ang) * 16 + rnd(-5, 5); } break;
+          case 'smoke': p.size = rnd(3, 4.5); p.life = rnd(0.8, 1.2); if (!burst) { p.vx = rnd(-3, 3); p.vy = rnd(-12, -6); } break;
+          case 'bubble': p.size = rnd(2, 4.2); p.life = rnd(1, 1.6); if (!burst) { p.vx = rnd(-4, 4); p.vy = rnd(-14, -7); } break;
+          case 'rainbow': p.size = rnd(4, 5.5); p.life = 0.8; p.hue = (fxHue += 22) % 360; if (!burst) p.vx = p.vy = 0; break;
+          case 'prints': // 왼발·오른발이 번갈아 찍힌다
+            p.em = '🐾'; p.size = 10; p.life = 2.4; p.vx = p.vy = 0; p.rot = ang + Math.PI / 4;
+            p.x += -Math.sin(ang) * 2.6 * fxFoot; p.y += Math.cos(ang) * 2.6 * fxFoot; fxFoot = -fxFoot;
+            if (burst) { p.vx = Math.cos(a) * sp; p.vy = Math.sin(a) * sp; p.life = 1.2; }
+            break;
+        }
+        parts.push(p);
+      }
+      function drawPart(g, p) {
+        const t = p.age / p.life;
+        g.save(); g.translate(p.x, p.y);
+        if (p.em) {
+          const pop = Math.min(1, p.age / 0.12) * (p.kind === 'prints' ? 1 : 1 + 0.15 * Math.sin(p.age * 14));
+          g.globalAlpha = p.kind === 'prints' ? (t < 0.6 ? 1 : (1 - t) / 0.4) : 1 - t * t;
+          g.rotate(p.rot); g.scale(pop, pop); g.font = `${p.size}px sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(p.em, 0, 0);
+        } else if (p.kind === 'flame') {
+          g.globalAlpha = 0.9 * (1 - t * 0.6); g.fillStyle = t < 0.25 ? '#FFF6B0' : t < 0.55 ? '#FFB62E' : t < 0.8 ? '#F2603A' : '#8E8E9A';
+          g.beginPath(); g.arc(0, 0, p.size * (1 - t * 0.8), 0, 7); g.fill();
+        } else if (p.kind === 'smoke') {
+          g.fillStyle = `rgba(${p.color},${0.8 * (1 - t)})`; g.beginPath(); g.arc(0, 0, p.size * (1 + t * 1.6), 0, 7); g.fill();
+        } else if (p.kind === 'bubble') {
+          g.beginPath(); g.arc(0, 0, p.size, 0, 7); g.fillStyle = `rgba(190,235,255,${0.4 * (1 - t)})`; g.fill();
+          g.strokeStyle = `rgba(90,180,230,${0.9 * (1 - t * 0.5)})`; g.lineWidth = 0.7; g.stroke();
+          g.fillStyle = `rgba(255,255,255,${0.9 * (1 - t)})`; g.beginPath(); g.arc(-p.size * 0.35, -p.size * 0.35, p.size * 0.22, 0, 7); g.fill();
+        } else if (p.kind === 'rainbow') {
+          g.globalAlpha = 1 - t; g.fillStyle = `hsl(${p.hue},90%,62%)`; g.beginPath(); g.arc(0, 0, p.size * (1 - t * 0.6), 0, 7); g.fill();
+        }
+        g.restore();
+      }
+      function fxFrame(now) {
+        fxRaf = 0;
+        const dt = Math.min(0.05, (now - fxPrev) / 1000), g = fx.getContext('2d'), r = dpr();
+        fxPrev = now;
+        g.setTransform(r * k, 0, 0, r * k, 0, 0); g.clearRect(0, 0, 100, 100);
+        for (let q = parts.length - 1; q >= 0; q--) {
+          const p = parts[q];
+          p.age += dt;
+          if (p.age >= p.life) { parts.splice(q, 1); continue; }
+          if (p.kind === 'emoji') p.vy += 6 * dt;                         // 살랑살랑 떨어진다
+          if (p.kind === 'bubble') p.x += Math.sin(p.age * 6 + p.wob) * 4 * dt; // 비눗방울은 좌우로 흔들린다
+          p.vx *= 1 - 2.2 * dt; p.vy *= 1 - 2.2 * dt;                     // 터질 때 퍼진 속도는 금방 줄어든다
+          p.x += p.vx * dt; p.y += p.vy * dt;
+          drawPart(g, p);
+        }
+        if (parts.length) fxRaf = requestAnimationFrame(fxFrame);
+      }
+      const fxKick = () => { if (parts.length && !fxRaf) { fxPrev = performance.now(); fxRaf = requestAnimationFrame(fxFrame); } };
+      const burst = (pt0, n) => { for (let q = 0; q < n; q++) puff(pt0[0], pt0[1], 0, true); fxKick(); };
       const poly = (g, pts, end) => { g.beginPath(); g.moveTo(...pts[0]); for (let j = 1; j <= end; j++) g.lineTo(...pts[j]); };
       function draw() {
         raf = 0;
@@ -1163,7 +1540,9 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
         strokes.forEach((pts, s) => {
           const end = s < si ? pts.length - 1 : s === si ? idx : 0;
           if (end < 1) return;
-          g.strokeStyle = TRACE_COLORS[s % TRACE_COLORS.length]; g.lineWidth = TRACE_INK; poly(g, pts, end); g.stroke();
+          // 캐릭터 색으로 은은하게 빛나는 선 + 가운데 광택
+          g.save(); g.shadowColor = tracer.ink; g.shadowBlur = 12 * dpr(); g.strokeStyle = tracer.ink; g.lineWidth = TRACE_INK; poly(g, pts, end); g.stroke(); g.restore();
+          g.strokeStyle = 'rgba(255,255,255,.45)'; g.lineWidth = TRACE_INK * 0.28; poly(g, pts, end); g.stroke();
         });
         if (done) { head.style.display = 'none'; return; }
         // 4) 획 시작점 번호 (현재 획이 맨 위에 오도록 뒤에서부터)
@@ -1191,20 +1570,41 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
         for (let j = idx + 1; j <= Math.min(idx + TRACE_LOOK, pts.length - 1); j++) if (dist(p, pts[j]) < TRACE_TOL) best = j;
         if (best > idx) {
           if (Math.floor(best / TRACE_TICK) > Math.floor(idx / TRACE_TICK)) mallet(1046 + (best % 3) * 130, { dur: 0.08, vol: 0.03, strike: 0.2 });
+          for (let j = idx + 1; TRACE_FX && j <= best; j++) { // 나아간 만큼 일정 간격마다 자취 효과를 뿌린다
+            if (++fxAcc < FX_STEP[tracer.fx.kind]) continue;
+            fxAcc = 0;
+            const q = pts[Math.max(0, j - 3)];
+            puff(pts[j][0], pts[j][1], Math.atan2(pts[j][1] - q[1], pts[j][0] - q[0]), false);
+          }
+          fxKick();
           idx = best;
         }
         if (idx >= pts.length - 1 - TRACE_END) endStroke();
       }
       function endStroke() {
+        const tail = strokes[si];
+        if (TRACE_FX) burst(tail[tail.length - 1], 5); // 한 획을 끝낼 때마다 팡!
+        head.classList.remove('go');
         si++; idx = 0; dragId = null; sndSnap();
         if (si >= strokes.length) { done = true; finish(); }
+      }
+      // 단어카드: 글자 + 큰 그림 + 단어. 'word'가 있는 글자(자음·모음·ABC·1~10)에서만 보인다. 누르면 닫힌다.
+      function showWordCard() {
+        if (!it.word || !board.isConnected) return;
+        const [pic, ...rest] = it.word.split(' '), photo = VOICE.imgs.get(imgKey(cat, it));
+        const card = h('div', { cls: 'tr-card', role: 'img', 'aria-label': it.word, onclick: () => card.remove() },
+          cat.id !== 'line' && h('div', { cls: 'tr-card-ch' }, it.ch),
+          photo ? h('img', { cls: 'tr-card-img', src: photo, alt: '' }) : h('div', { cls: 'tr-card-em' }, pic), // 보호자가 넣은 사진이 있으면 이모지 대신 보여 준다
+          h('div', { cls: 'tr-card-word' }, rest.join(' ')));
+        board.append(card);
       }
       function finish() {
         draw();
         S.traced.add(cat.id + i);
-        setTimeout(() => speak(it.word ? `${it.say}. ${spokenWord(it)}` : it.say, cat.lang), 700);
+        setTimeout(() => sayItem(cat, it, true), 700);
+        setTimeout(showWordCard, 700); // 읽어 주는 순간에 맞춰 단어카드가 톡 나타난다
         showDone(el, { rect: board.getBoundingClientRect(), src: canvas, title: cat.id === 'line' ? '잘 그렸어요! 🎉' : '참 잘 썼어요! 🎉',
-          again: { label: cat.id === 'line' ? '▶ 다음 선' : '▶ 다음 글자', go: () => goItem(i + 1) } });
+          again: { label: cat.id === 'line' ? '▶ 다음 선' : cat.id === 'num' ? '▶ 다음 숫자' : '▶ 다음 글자', go: () => goItem(i + 1) } });
       }
 
       board.addEventListener('pointerdown', (e) => {
@@ -1214,7 +1614,8 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
           head.classList.remove('nudge'); void head.offsetWidth; head.classList.add('nudge');
           return;
         }
-        dragId = e.pointerId; last = p;
+        dragId = e.pointerId; last = p; fxAcc = 0;
+        head.classList.add('go');
         try { board.setPointerCapture(e.pointerId); } catch (_) {}
       });
       board.addEventListener('pointermove', (e) => {
@@ -1229,12 +1630,12 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
         }
         redraw();
       });
-      const up = (e) => { if (e.pointerId === dragId) dragId = null; };
+      const up = (e) => { if (e.pointerId === dragId) { dragId = null; head.classList.remove('go'); } };
       board.addEventListener('pointerup', up);
       board.addEventListener('pointercancel', up);
 
       layout();
-      speak(it.say, cat.lang);
+      sayItem(cat, it, false);
       return { relayout: layout };
     }
     return { el, mount };
