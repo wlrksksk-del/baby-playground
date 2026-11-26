@@ -476,7 +476,23 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
   // ================================================================ 화면 전환
   const SCREENS = {};
   let current = null; // 지금 게임의 { relayout }
+  // 폰의 뒤로가기(안드로이드 버튼·스와이프)가 페이지를 떠나지 않고 앱 안의 이전 화면으로 가게 한다.
+  // 홈이 아닐 때는 기록을 하나 더 쌓아 두고, 뒤로가기가 그것을 꺼내면 BACK에 적힌 화면으로 간다.
+  const BACK = {
+    level: () => go('home'), parent: () => go('home'), album: () => go('home'), traceMenu: () => go('home'),
+    traceList: () => go('traceMenu'), trace: () => go('traceList'),
+    pick: () => go(S.target === 'jigsaw' ? 'level' : 'home'),
+    jigsaw: () => go('pick', { target: 'jigsaw' }), person: () => go('pick', { target: 'person' }), body: () => go('pick', { target: 'body' }),
+  };
+  let inApp = false, skipPop = false;
+  addEventListener('popstate', () => {
+    if (skipPop) { skipPop = false; return; }
+    inApp = false;
+    if (S.screen !== 'home') (BACK[S.screen] || (() => go('home')))();
+  });
   function go(screen, patch = {}) {
+    if (screen === 'home' && inApp) { inApp = false; skipPop = true; history.back(); } // 쌓아 둔 기록 정리
+    else if (screen !== 'home' && !inApp) { inApp = true; try { history.pushState({ ugj: 1 }, ''); } catch (_) {} }
     current = null; stopFx();
     Object.assign(S, patch, { screen });
     const app = document.getElementById('app');
