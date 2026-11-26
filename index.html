@@ -214,6 +214,8 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
 .tr-card { position: absolute; inset: 5% 8% 17%; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2%; background: var(--paper); border-radius: 26px; box-shadow: 0 0 0 4px var(--yellow-bd), 0 14px 30px -10px rgba(80,60,30,.4); cursor: pointer; animation: cardPop .5s cubic-bezier(.2,1.4,.4,1) both; }
 .tr-card-ch { position: absolute; top: 4%; left: 6%; font-family: var(--display); font-weight: 700; font-size: calc(var(--side) * .1); line-height: 1; color: var(--ink2); }
 .tr-card-em { font-size: calc(var(--side) * .36); line-height: 1.1; }
+.tr-card-count { display: grid; justify-content: center; align-content: center; gap: calc(var(--side) * .01) calc(var(--side) * .02); line-height: 1; margin-top: 4%; }
+.tr-card-count span { display: block; text-align: center; animation: pop .35s cubic-bezier(.2,1.6,.4,1) both; }
 .tr-card-word { font-family: var(--display); font-weight: 700; font-size: calc(var(--side) * .085); line-height: 1.2; text-align: center; padding: 0 6%; color: var(--ink); }
 @keyframes cardPop { 0% { transform: scale(.4) rotate(-6deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
 .vc-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; max-height: 60vh; overflow-y: auto; }
@@ -1111,8 +1113,8 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
       N('4', '넷', '🚗 자동차 네 대', 'M60 12 L18 64 H84', 'M60 12 V88'),
       N('5', '다섯', '⭐ 별 다섯 개', 'M72 12 H30 L26 48 Q38 40 52 40 Q76 40 76 64 Q76 88 50 88 Q32 88 22 76'),
       N('6', '여섯', '🐞 무당벌레 여섯 마리', 'M68 14 Q30 24 26 60 Q26 88 50 88 Q74 88 74 66 Q74 46 50 46 Q28 46 26 64'),
-      N('7', '일곱', '🌈 무지개 일곱 색깔', 'M22 12 H78 L40 88'),
-      N('8', '여덟', '🐙 문어 다리 여덟 개', 'M50 12 Q28 12 28 30 Q28 46 50 50 Q74 54 74 70 Q74 88 50 88 Q26 88 26 70 Q26 54 50 50 Q72 46 72 30 Q72 12 50 12'),
+      N('7', '일곱', '🐥 병아리 일곱 마리', 'M22 12 H78 L40 88'),
+      N('8', '여덟', '🐙 문어 여덟 마리', 'M50 12 Q28 12 28 30 Q28 46 50 50 Q74 54 74 70 Q74 88 50 88 Q26 88 26 70 Q26 54 50 50 Q72 46 72 30 Q72 12 50 12'),
       N('9', '아홉', '🎈 풍선 아홉 개', 'M72 34 Q72 12 50 12 Q28 12 28 32 Q28 52 50 52 Q72 52 72 34 V62 Q72 88 46 88 Q32 88 24 78'),
     ];
     const zero = N('0', '영', '⭕ 동그라미', 'M50 12 A26 38 0 0 0 50 88 A26 38 0 0 0 50 12');
@@ -1134,6 +1136,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
       return N(String(n), readNum(n), undefined, ...d);
     };
     const big = Array.from({ length: 91 }, (_, k) => compose(k + 10));
+    big[0].word = '🍬 사탕 열 개'; // 10까지는 단어카드에 그림을 그 수만큼 그려 준다
     return [...ones, ...big, zero];
   }
   const O_RING = 'M50 12 A30 38 0 0 0 50 88 A30 38 0 0 0 50 12';
@@ -1696,12 +1699,22 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
         if (si >= strokes.length) { done = true; finish(); }
       }
       // 단어카드: 글자 + 큰 그림 + 단어. 'word'가 있는 글자(자음·모음·ABC·1~10)에서만 보인다. 누르면 닫힌다.
+      // 숫자 1~10: 그림을 그 수만큼 줄 맞춰 그리고, 하나씩 톡톡 나타나게 해서 같이 셀 수 있게 한다
+      function countPics(pic) {
+        const n = Number(it.ch);
+        if (cat.id !== 'num' || !(n >= 1 && n <= 10)) return null;
+        const cols = [1, 1, 2, 3, 2, 3, 3, 4, 4, 3, 5][n], rows = Math.ceil(n / cols);
+        const size = Math.min(0.34, 0.56 / Math.max(cols, rows * 1.15)); // 카드 너비 안에 들어가도록
+        return h('div', { cls: 'tr-card-count', style: `grid-template-columns: repeat(${cols}, auto); font-size: calc(var(--side) * ${size.toFixed(3)})` },
+          [...Array(n)].map((_, k) => h('span', { style: `animation-delay: ${0.15 + k * 0.12}s` }, pic)));
+      }
       function showWordCard() {
         if (!it.word || !board.isConnected) return;
         const [pic, ...rest] = it.word.split(' '), photo = VOICE.imgs.get(imgKey(cat, it));
         const card = h('div', { cls: 'tr-card', role: 'img', 'aria-label': it.word, onclick: () => card.remove() },
           cat.id !== 'line' && h('div', { cls: 'tr-card-ch' }, it.ch),
-          photo ? h('img', { cls: 'tr-card-img', src: photo, alt: '' }) : h('div', { cls: 'tr-card-em' }, pic), // 보호자가 넣은 사진이 있으면 이모지 대신 보여 준다
+          photo ? h('img', { cls: 'tr-card-img', src: photo, alt: '' }) // 보호자가 넣은 사진이 있으면 이모지 대신 보여 준다
+            : countPics(pic) || h('div', { cls: 'tr-card-em' }, pic),
           h('div', { cls: 'tr-card-word' }, rest.join(' ')));
         board.append(card);
       }
