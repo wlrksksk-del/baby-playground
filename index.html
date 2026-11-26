@@ -248,6 +248,9 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
 /* 완성 */
 .done-bar { position: absolute; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); z-index: 50; background: var(--paper); border-radius: 28px; padding: 18px 16px 16px; box-shadow: 0 20px 44px -12px rgba(80,60,30,.35), 0 0 0 1px var(--line); animation: up .35s cubic-bezier(.2,.9,.3,1.2) both; overflow: hidden; }
 .done-bar::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: linear-gradient(90deg, var(--yellow-bd), var(--coral-bd), var(--purple-bd), var(--blue-bd), var(--green-bd)); }
+.done-title .t { display: inline-block; animation: praisePop .6s cubic-bezier(.2,1.6,.4,1) both, praiseBob 1.2s ease-in-out .6s infinite; }
+@keyframes praisePop { 0% { transform: scale(.2) rotate(-8deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+@keyframes praiseBob { 0%, 100% { transform: none; } 50% { transform: scale(1.08) rotate(-2deg); } }
 .done-title { display: flex; align-items: center; justify-content: center; gap: 8px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 30px; margin-bottom: 14px; }
 .btn.auto { position: relative; overflow: hidden; }
 .btn.auto::after { content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 6px; background: rgba(60,40,20,.22); transform-origin: left; animation: autoFill var(--auto-ms, 3500ms) linear both; }
@@ -443,12 +446,12 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
       [rect.left + rect.width * 0.1, rect.top + rect.height * 0.12], [rect.right - rect.width * 0.1, rect.top + rect.height * 0.2],
       [rect.left + rect.width * 0.2, rect.bottom - rect.height * 0.12], [rect.right - rect.width * 0.15, rect.bottom - rect.height * 0.2],
       [rect.left + rect.width * 0.5, rect.top + rect.height * 0.05],
-    ]).slice(0, 4).map(([x, y]) => [Math.min(W - 20, Math.max(20, x)), Math.min(H - 20, Math.max(20, y))]);
+    ]).map(([x, y]) => [Math.min(W - 20, Math.max(20, x)), Math.min(H - 20, Math.max(20, y))]);
     const parts = [];
     spots.forEach(([x, y], i) => {
-      const t0 = i * 230; sndPop(t0 / 1000);
-      for (let k = 0; k < 34; k++) {
-        const a = (k / 34) * Math.PI * 2 + Math.random() * 0.2, v = m * (0.7 + Math.random() * 0.6);
+      const t0 = i * 170; sndPop(t0 / 1000);
+      for (let k = 0; k < 44; k++) {
+        const a = (k / 44) * Math.PI * 2 + Math.random() * 0.2, v = m * (0.7 + Math.random() * 0.6);
         parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, t0, c: colors[Math.floor(Math.random() * colors.length)], r: 2.5 + Math.random() * 3, star: k % 6 === 0 });
       }
     });
@@ -537,22 +540,24 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
   }
 
   // 다 끝나면 폭죽 → 완성 막대. '자동 넘김'이 켜져 있으면 버튼에 진행 막대가 차오르고 wait(ms) 뒤 again.go()로 저절로 넘어간다.
-  const AUTO_MS = 3500;
-  function showDone(screenEl, { rect, src, title = '잘했어요!', again, wait = AUTO_MS }) {
+  // until: 이 약속이 풀릴 때까지(칭찬 목소리가 끝날 때까지)는 넘어가지 않는다
+  const AUTO_MS = 1800;
+  function showDone(screenEl, { rect, src, again, wait = AUTO_MS, until }) {
     sndDone();
     if (rect) fireworks(rect, src);
+    const spoken = until || praise(), title = pickOne(PRAISE_TITLE);
     setTimeout(() => {
       if (!screenEl.isConnected) return;
       let moved = false;
       const next = () => { if (moved || !screenEl.isConnected) return; moved = true; again.go(); };
       const nextBtn = h('button', { cls: 'btn yellow' + (S.auto ? ' auto' : ''), style: '--auto-ms:' + wait + 'ms', onclick: () => { sndTap(); next(); } }, again.label);
       screenEl.append(h('div', { cls: 'done-bar' },
-        h('div', { cls: 'done-title' }, icon(MASCOT_SVG, 36), title),
+        h('div', { cls: 'done-title' }, icon(MASCOT_SVG, 36), h('span', { cls: 't' }, title)),
         h('div', { cls: 'row' },
           nextBtn,
           h('button', { cls: 'btn blue', onclick: () => { sndTap(); moved = true; go('home'); } }, '🏠 처음으로'))));
-      if (S.auto) setTimeout(next, wait);
-    }, 1400);
+      if (S.auto) setTimeout(() => spoken.then(() => setTimeout(next, 300)), wait);
+    }, 800);
   }
   // 같은 놀이를 다음 사진으로 이어 한다 (마지막 사진 다음은 첫 사진)
   async function goNextPhoto(target, patch = {}) {
@@ -714,6 +719,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
             h('p', {}, '아래 기본 버튼을 눌러보세요. 그래도 안 뜨면 지금 보고 계신 앱이 사진 고르기를 막고 있는 거예요. 사파리나 크롬에서 열어주세요.'),
             fileInput('pick-plain', { multiple: true, cls: 'plain-input' })),
           status, list),
+        praiseSection(),
         h('section', { cls: 'sec' },
           h('h2', {}, '🧸 예시 그림'),
           h('p', { cls: 'hint' }, '가족 사진을 넣기 전에 보여주는 그림이에요. 보여주고 싶지 않은 그림은 눌러서 숨겨주세요. 가족 사진을 넣으면 예시 그림은 자동으로 빠져요.'),
@@ -920,7 +926,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
         done = true;
         setTimeout(() => {
           full.style.opacity = 1; pieces.forEach((q) => (q.el.style.opacity = 0));
-          showDone(el, { rect: board.getBoundingClientRect(), src: g.fc, title: '다 맞췄어요! 🎉',
+          showDone(el, { rect: board.getBoundingClientRect(), src: g.fc,
             again: { label: '▶ 다음 사진', go: () => goNextPhoto('jigsaw') } });
         }, 250);
       }
@@ -976,7 +982,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
         if (Math.hypot(pos.x - home.x, pos.y - home.y) < PW * 0.45) {
           done = true; pos.x = home.x; pos.y = home.y;
           piece.classList.add('placed'); put(); cover.style.opacity = 0; sndSnap();
-          setTimeout(() => showDone(el, { rect: bg.getBoundingClientRect(), src: sq, title: '쏙 들어갔어요! 🎉',
+          setTimeout(() => showDone(el, { rect: bg.getBoundingClientRect(), src: sq,
             again: { label: '▶ 다음 사진', go: () => goNextPhoto('person') } }), 300);
         }
       };
@@ -1003,7 +1009,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
       if (!last) go('body', { bodyIdx: i + 1 });
       else {
         nextBtn.style.visibility = 'hidden';
-        showDone(el, { rect: area.getBoundingClientRect(), src: ph.img, title: '모두 찾았어요! 🎉',
+        showDone(el, { rect: area.getBoundingClientRect(), src: ph.img,
           again: { label: '▶ 다음 사진', go: () => goNextPhoto('body') } });
       }
     } }, last ? '🌟 다 찾았어요!' : `다음: ${PARTS[i + 1].e} ${PARTS[i + 1].ko} 찾기 →`);
@@ -1241,15 +1247,16 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
     const score = (v) => (/natural|neural/i.test(v.name) ? 8 : 0) + (/premium|enhanced|siri/i.test(v.name) ? 4 : 0) + (/online|google/i.test(v.name) ? 2 : 0) + (normLang(v.lang) === want ? 1 : 0);
     return ttsVoices.filter((v) => normLang(v.lang).startsWith(base)).sort((a, b) => score(b) - score(a))[0] || null;
   }
-  function speak(text, lang) {
-    if (!S.sound || !text || !window.speechSynthesis) return;
+  function speak(text, lang, onEnd) { // onEnd: 다 읽었거나 읽을 수 없을 때 한 번 부른다
+    if (!S.sound || !text || !window.speechSynthesis) { if (onEnd) onEnd(); return; }
     try {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text), v = bestVoice(lang);
       u.lang = lang; u.rate = 0.9; u.pitch = 1.05;
       if (v) u.voice = v;
+      if (onEnd) u.onend = u.onerror = onEnd;
       speechSynthesis.speak(u);
-    } catch (_) {}
+    } catch (_) { if (onEnd) onEnd(); }
   }
 
   // 부모 녹음: 기기 안(IndexedDB)에만 저장한다. 키는 '카테고리:글자'라서 목록 순서가 바뀌어도 유지된다.
@@ -1310,18 +1317,42 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
   const storedLoad = clipLoadAll();
 
   // 녹음된 소리가 있으면 재생하고 true를 돌려준다 (force: 소리 설정이 꺼져 있어도 보호자 확인용으로 재생)
-  function playClip(key, force) {
+  function playClip(key, force, onEnd) {
     const url = VOICE.urls.get(key);
     if (!url || (!S.sound && !force)) return false;
     try {
       if (window.speechSynthesis) speechSynthesis.cancel();
       if (VOICE.audio) VOICE.audio.pause();
-      VOICE.audio = new Audio(url);
-      VOICE.audio.play().catch(() => {});
+      const a = VOICE.audio = new Audio(url);
+      if (onEnd) { a.onended = a.onerror = a.onpause = onEnd; }
+      a.play().catch(() => { if (onEnd) onEnd(); });
       return true;
     } catch (_) { return false; }
   }
   const sayItem = (cat, it, full) => { if (!playClip(clipKey(cat, it))) speak(full ? itemSpeech(it) : it.say, cat.lang); };
+  // 녹음(key)이 있으면 그것을, 없으면 text를 읽고, 끝나면 풀리는 약속. 끝 알림이 안 오는 기기도 있어 limit(ms) 뒤엔 무조건 푼다.
+  function sayP(key, text, lang, limit = 7000) {
+    return new Promise((resolve) => {
+      let t = 0; const done = () => { clearTimeout(t); resolve(); };
+      t = setTimeout(done, limit);
+      if (!(key && playClip(key, false, done))) speak(text, lang, done);
+    });
+  }
+
+  // 칭찬: 부모가 녹음한 칭찬이 있으면 그중 하나를, 없으면 기본 음성으로 칭찬 문장을 무작위로 들려준다
+  const PRAISE_N = 4;
+  const PRAISE_SAY = ['우와, 정말 잘했어!', '최고야! 너무 멋지다!', '대단해! 혼자서 해냈네!', '짝짝짝! 정말 멋져!'];
+  const PRAISE_TITLE = ['참 잘했어요! 🎉', '최고예요! 👍', '우와, 대단해요! 🌟', '정말 멋져요! 👏', '해냈어요! 🏆', '짝짝짝! 🎊'];
+  const praiseKey = (n) => 'praise:' + n;
+  const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
+  let lastPraise = '';
+  function praise() {
+    const recs = [...Array(PRAISE_N)].map((_, i) => praiseKey(i + 1)).filter((k) => VOICE.urls.has(k));
+    const pool = recs.length ? recs : PRAISE_SAY;
+    let x; do { x = pickOne(pool); } while (pool.length > 1 && x === lastPraise); // 같은 칭찬이 연달아 나오지 않게
+    lastPraise = x;
+    return recs.length ? sayP(x, '', 'ko-KR') : sayP(null, x, 'ko-KR');
+  }
 
   async function recStart(key, onEnd) {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) throw new Error('unsupported');
@@ -1342,6 +1373,34 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
     VOICE.timer = setTimeout(() => { if (rec.state === 'recording') rec.stop(); }, VOICE_MAX_MS); // 깜빡 잊고 켜 둬도 자동으로 끝난다
   }
   const recStop = () => { if (VOICE.rec && VOICE.rec.state === 'recording') VOICE.rec.stop(); };
+
+  // 보호자 설정 안의 '칭찬 녹음' 구역: 다 했을 때 나올 칭찬을 최대 4개까지 녹음한다
+  function praiseSection() {
+    const list = h('div', { cls: 'vc-list' });
+    async function toggleRec(key) {
+      if (VOICE.rec) return recStop();
+      try { await recStart(key, renderList); }
+      catch (e) { toast(e && e.name === 'NotAllowedError' ? '마이크 사용을 허용해 주세요' : '이 화면에서는 녹음을 쓸 수 없어요 (https 또는 localhost 주소에서 열어주세요)'); return; }
+      renderList();
+    }
+    function renderList() {
+      list.innerHTML = '';
+      for (let n = 1; n <= PRAISE_N; n++) {
+        const key = praiseKey(n), has = VOICE.urls.has(key), on = VOICE.key === key;
+        list.append(h('div', { cls: 'vc-row' + (on ? ' rec' : '') },
+          h('span', { cls: 'vc-g', css: { fontSize: '26px' } }, ['👏', '🌟', '🏆', '💖'][n - 1]),
+          h('div', { cls: 'vc-t' }, h('b', {}, `칭찬 ${n}${has ? ' ✓' : ''}`), h('small', {}, on ? '녹음 중… 다 말하면 ⏹을 눌러요' : `예: "${PRAISE_SAY[n - 1]}"`)),
+          h('button', { cls: 'vc-btn' + (on ? ' on' : ''), 'aria-label': on ? '녹음 끝내기' : '녹음하기', onclick: () => toggleRec(key) }, on ? '⏹' : '🎤'),
+          h('button', { cls: 'vc-btn', 'aria-label': '녹음 듣기', disabled: !has, onclick: () => playClip(key, true) }, '▶'),
+          h('button', { cls: 'vc-btn', 'aria-label': '녹음 지우기', disabled: !has, onclick: async () => { await clipDelete(key); renderList(); } }, '🗑')));
+      }
+    }
+    renderList();
+    return h('section', { cls: 'sec' },
+      h('h2', {}, '👏 칭찬 녹음'),
+      h('p', { cls: 'hint' }, '퍼즐을 다 맞추거나 글자를 다 쓰면 나오는 칭찬을 부모님 목소리로 녹음해요. 여러 개 녹음하면 그중 하나가 무작위로 나와요. 녹음이 없으면 기본 음성이 칭찬해요.'),
+      list);
+  }
 
   // 보호자 설정 안의 '목소리 녹음' 구역
   function voiceSection() {
@@ -1649,10 +1708,11 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
       function finish() {
         draw();
         S.traced.add(cat.id + i);
-        setTimeout(() => sayItem(cat, it, true), 700);
-        setTimeout(showWordCard, 700); // 읽어 주는 순간에 맞춰 단어카드가 톡 나타난다
-        showDone(el, { rect: board.getBoundingClientRect(), src: canvas, title: cat.id === 'line' ? '잘 그렸어요! 🎉' : '참 잘 썼어요! 🎉',
-          wait: 4500, // 글자 읽어 주기와 단어카드를 볼 시간을 조금 더 준다
+        // 글자(+단어)를 읽어 주고 단어카드를 띄운 뒤, 이어서 칭찬한다. 둘 다 끝나야 다음 글자로 넘어간다.
+        const spoken = new Promise((r) => setTimeout(r, 300))
+          .then(() => { showWordCard(); return sayP(clipKey(cat, it), itemSpeech(it), cat.lang); })
+          .then(() => praise());
+        showDone(el, { rect: board.getBoundingClientRect(), src: canvas, until: spoken,
           again: { label: cat.id === 'line' ? '▶ 다음 선' : cat.id === 'num' ? '▶ 다음 숫자' : '▶ 다음 글자', go: () => goItem(i + 1) } });
       }
 
