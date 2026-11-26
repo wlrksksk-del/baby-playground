@@ -249,6 +249,9 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
 .done-bar { position: absolute; left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); z-index: 50; background: var(--paper); border-radius: 28px; padding: 18px 16px 16px; box-shadow: 0 20px 44px -12px rgba(80,60,30,.35), 0 0 0 1px var(--line); animation: up .35s cubic-bezier(.2,.9,.3,1.2) both; overflow: hidden; }
 .done-bar::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: linear-gradient(90deg, var(--yellow-bd), var(--coral-bd), var(--purple-bd), var(--blue-bd), var(--green-bd)); }
 .done-title { display: flex; align-items: center; justify-content: center; gap: 8px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 30px; margin-bottom: 14px; }
+.btn.auto { position: relative; overflow: hidden; }
+.btn.auto::after { content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 6px; background: rgba(60,40,20,.22); transform-origin: left; animation: autoFill var(--auto-ms, 3500ms) linear both; }
+@keyframes autoFill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @media (orientation: landscape) and (min-width: 640px) { .done-bar { left: auto; width: 36%; min-width: 300px; } }
 
 .fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 900; }
@@ -313,13 +316,13 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
   const JITTER = 0.35; // 흩어 놓을 때 조각 몸통 대비 추가로 흔드는 비율 (클수록 더 어지럽게, 대신 더 겹친다)
   const snapRatio = (n) => (n <= 6 ? 0.6 : n <= 16 ? 0.45 : 0.35);
 
-  const S = { screen: 'home', photos: [], demo: [], levels: [...LEVELS], ghost: true, sound: true, fx: true, hiddenDemos: [], traced: new Set() };
+  const S = { screen: 'home', photos: [], demo: [], levels: [...LEVELS], ghost: true, sound: true, fx: true, auto: true, hiddenDemos: [], traced: new Set() };
   try {
     const saved = JSON.parse(localStorage.getItem('ugj-settings-v2') || 'null');
-    if (saved) for (const k of ['levels', 'ghost', 'sound', 'fx', 'hiddenDemos']) if (k in saved) S[k] = saved[k];
+    if (saved) for (const k of ['levels', 'ghost', 'sound', 'fx', 'auto', 'hiddenDemos']) if (k in saved) S[k] = saved[k];
   } catch (_) {}
   function saveSettings() {
-    try { localStorage.setItem('ugj-settings-v2', JSON.stringify({ levels: S.levels, ghost: S.ghost, sound: S.sound, fx: S.fx, hiddenDemos: S.hiddenDemos })); } catch (_) {}
+    try { localStorage.setItem('ugj-settings-v2', JSON.stringify({ levels: S.levels, ghost: S.ghost, sound: S.sound, fx: S.fx, auto: S.auto, hiddenDemos: S.hiddenDemos })); } catch (_) {}
   }
   // 가족 사진이 있으면 그것만, 없으면 보호자가 끄지 않은 예시 그림만 쓴다
   const photos = () => (S.photos.length ? S.photos : S.demo.filter((d) => !S.hiddenDemos.includes(d.id)));
@@ -517,17 +520,31 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
     return b;
   }
 
-  function showDone(screenEl, { rect, src, title = '잘했어요!', again }) {
+  // 다 끝나면 폭죽 → 완성 막대. '자동 넘김'이 켜져 있으면 버튼에 진행 막대가 차오르고 wait(ms) 뒤 again.go()로 저절로 넘어간다.
+  const AUTO_MS = 3500;
+  function showDone(screenEl, { rect, src, title = '잘했어요!', again, wait = AUTO_MS }) {
     sndDone();
     if (rect) fireworks(rect, src);
     setTimeout(() => {
       if (!screenEl.isConnected) return;
+      let moved = false;
+      const next = () => { if (moved || !screenEl.isConnected) return; moved = true; again.go(); };
+      const nextBtn = h('button', { cls: 'btn yellow' + (S.auto ? ' auto' : ''), style: '--auto-ms:' + wait + 'ms', onclick: () => { sndTap(); next(); } }, again.label);
       screenEl.append(h('div', { cls: 'done-bar' },
         h('div', { cls: 'done-title' }, icon(MASCOT_SVG, 36), title),
         h('div', { cls: 'row' },
-          h('button', { cls: 'btn yellow', onclick: () => { sndTap(); again.go(); } }, again.label),
-          h('button', { cls: 'btn blue', onclick: () => { sndTap(); go('home'); } }, '🏠 처음으로'))));
+          nextBtn,
+          h('button', { cls: 'btn blue', onclick: () => { sndTap(); moved = true; go('home'); } }, '🏠 처음으로'))));
+      if (S.auto) setTimeout(next, wait);
     }, 1400);
+  }
+  // 같은 놀이를 다음 사진으로 이어 한다 (마지막 사진 다음은 첫 사진)
+  async function goNextPhoto(target, patch = {}) {
+    const list = photos();
+    if (!list.length) return go('home');
+    const p = list[(list.indexOf(S.photo) + 1) % list.length];
+    if (!(await ready(p))) return go('pick', { target });
+    go(target, Object.assign({ photo: p, bodyIdx: 0 }, patch));
   }
 
   // ================================================================ 홈: 게임 고르기
@@ -567,11 +584,11 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
       if (!S.photos.length) list.append(h('p', { cls: 'hint' }, '아직 넣은 사진이 없어요. 넣기 전에는 예시 그림으로 놀아요.'));
       S.photos.forEach((p) => {
         const inp = h('input', { type: 'text', value: p.name, placeholder: '이름 (예: 엄마)', maxlength: '8', autocomplete: 'off', id: 'nm-' + p.id });
-        inp.addEventListener('input', () => { p.name = inp.value.trim(); });
+        inp.addEventListener('input', () => { p.name = inp.value.trim(); clearTimeout(p.saveT); p.saveT = setTimeout(() => famSave(p), 400); });
         list.append(h('div', { cls: 'ph-row' },
           h('img', { src: p.url, alt: '' }), inp,
           h('button', { cls: 'ph-del', 'aria-label': '사진 빼기', onclick: () => {
-            URL.revokeObjectURL(p.url); S.photos = S.photos.filter((x) => x !== p); renderList();
+            S.photos = S.photos.filter((x) => x !== p); famDelete(p); renderList();
           } }, '✕')));
       });
     }
@@ -605,18 +622,22 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
       if (!list.length) return toast('선택된 사진이 없어요');
       if (busy) return;
       busy = true; status.textContent = `사진 ${list.length}장을 넣는 중…`;
-      let ok = 0, fail = 0;
+      let ok = 0, fail = 0, unsaved = 0;
+      try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (_) {} // 브라우저가 저장소를 함부로 비우지 않게 부탁
       for (const f of list) {
         if (S.photos.length >= 20) break;
         const r = await readFile(f);
         if (!r) { fail++; continue; }
-        S.photos.push({ id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), name: '', url: r.url, img: r.img });
+        const ph = { id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), name: '', url: r.url, img: r.img, t: Date.now() };
+        S.photos.push(ph);
+        if (!(await famSave(ph))) unsaved++;
         ok++;
         renderList();
       }
       busy = false; status.textContent = '';
       renderList();
-      if (ok && !fail) toast(`사진 ${ok}장을 넣었어요. 이름을 적어주세요`);
+      if (unsaved) toast('이 브라우저(시크릿 모드 등)에서는 저장이 안 돼서, 앱을 닫으면 사진이 사라져요');
+      else if (ok && !fail) toast(`사진 ${ok}장을 넣고 이 기기에 저장했어요. 이름을 적어주세요`);
       else if (ok) toast(`${ok}장은 넣었고, ${fail}장은 열 수 없는 형식이에요`);
       else toast('이 사진은 열 수 없어요. 다른 사진을 골라주세요');
     }
@@ -644,7 +665,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
     const toggles = h('div', { cls: 'chips' });
     function renderToggles() {
       toggles.innerHTML = '';
-      [['ghost', '밑그림'], ['sound', '소리'], ['fx', '폭죽']].forEach(([k, label]) => {
+      [['ghost', '밑그림'], ['sound', '소리'], ['fx', '폭죽'], ['auto', '자동 넘김']].forEach(([k, label]) => {
         toggles.append(h('button', { cls: 'chip' + (S[k] ? ' on' : ''), onclick: () => { S[k] = !S[k]; saveSettings(); renderToggles(); } },
           `${label} ${S[k] ? '켜짐' : '꺼짐'}`));
       });
@@ -689,10 +710,10 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
         photoSection(),
         h('section', { cls: 'sec' },
           h('h2', {}, '✨ 도움 · 효과'),
-          h('p', { cls: 'hint' }, '밑그림: 퍼즐 판에 사진을 흐리게 깔아둬요. 폭죽: 다 맞추면 짧게 터져요.'),
+          h('p', { cls: 'hint' }, '밑그림: 퍼즐 판에 사진을 흐리게 깔아둬요. 폭죽: 다 맞추면 짧게 터져요. 자동 넘김: 다 하면 몇 초 뒤 다음 사진·글자로 저절로 넘어가요.'),
           toggles),
         h('button', { cls: 'btn green', css: { marginTop: '18px' }, onclick: () => go('home') }, '완료'),
-        h('div', { cls: 'foot' }, '🔒 사진은 이 기기 밖으로 나가지 않아요. 앱을 닫으면 사진 목록도 사라져요.', h('br'), '아이에게 건네기 전 iOS \'사용법 유도\'를 켜두면 더 안전해요.'))));
+        h('div', { cls: 'foot' }, '🔒 사진은 이 기기 안에만 저장되고 밖으로 나가지 않아요. 다음에 열어도 그대로 있어요.', h('br'), '아이에게 건네기 전 iOS \'사용법 유도\'를 켜두면 더 안전해요.'))));
   };
 
   // ================================================================ 사진 퍼즐: 조각 수 고르기
@@ -884,7 +905,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
         setTimeout(() => {
           full.style.opacity = 1; pieces.forEach((q) => (q.el.style.opacity = 0));
           showDone(el, { rect: board.getBoundingClientRect(), src: g.fc, title: '다 맞췄어요! 🎉',
-            again: { label: '🧩 다른 사진', go: () => go('pick', { target: 'jigsaw' }) } });
+            again: { label: '▶ 다음 사진', go: () => goNextPhoto('jigsaw') } });
         }, 250);
       }
 
@@ -940,7 +961,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
           done = true; pos.x = home.x; pos.y = home.y;
           piece.classList.add('placed'); put(); cover.style.opacity = 0; sndSnap();
           setTimeout(() => showDone(el, { rect: bg.getBoundingClientRect(), src: sq, title: '쏙 들어갔어요! 🎉',
-            again: { label: '🙋 다른 사진', go: () => go('pick', { target: 'person' }) } }), 300);
+            again: { label: '▶ 다음 사진', go: () => goNextPhoto('person') } }), 300);
         }
       };
       piece.addEventListener('pointerup', up);
@@ -967,7 +988,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
       else {
         nextBtn.style.visibility = 'hidden';
         showDone(el, { rect: area.getBoundingClientRect(), src: ph.img, title: '모두 찾았어요! 🎉',
-          again: { label: '👀 다른 사진', go: () => go('pick', { target: 'body' }) } });
+          again: { label: '▶ 다음 사진', go: () => goNextPhoto('body') } });
       }
     } }, last ? '🌟 다 찾았어요!' : `다음: ${PARTS[i + 1].e} ${PARTS[i + 1].ko} 찾기 →`);
     let tapped = false;
@@ -1249,17 +1270,28 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
   }
   async function clipDelete(key) { setClipUrl(key, null); try { await idbDo('readwrite', (st) => st.delete(key)); } catch (_) {} }
   async function clipClearAll(map) { for (const k of [...map.keys()]) await clipDelete(k); } // map: VOICE.urls(녹음) 또는 VOICE.imgs(사진)
-  async function clipLoadAll() {
+  // 가족 사진도 같은 저장소에 'fam:' 키로 둔다. 값: { id, name, url(줄인 JPEG data URL), t(넣은 순서) }
+  const FAM = 'fam:';
+  const famSave = (p) => idbDo('readwrite', (st) => st.put({ id: p.id, name: p.name, url: p.url, t: p.t || 0 }, FAM + p.id)).then(() => true, () => false);
+  const famDelete = (p) => idbDo('readwrite', (st) => st.delete(FAM + p.id)).catch(() => {});
+  async function clipLoadAll() { // 녹음·단어카드 사진은 바로 등록하고, 가족 사진 목록은 돌려준다
+    const fam = [];
     try {
       const db = await voiceDb();
       await new Promise((resolve) => {
         const cur = db.transaction('clips').objectStore('clips').openCursor();
-        cur.onsuccess = () => { const c = cur.result; if (c) { setClipUrl(c.key, c.value); c.continue(); } else resolve(); };
+        cur.onsuccess = () => {
+          const c = cur.result;
+          if (!c) return resolve();
+          if (String(c.key).startsWith(FAM)) { if (c.value && c.value.url) fam.push(c.value); } else setClipUrl(c.key, c.value);
+          c.continue();
+        };
         cur.onerror = () => resolve();
       });
     } catch (_) {}
+    return fam;
   }
-  clipLoadAll();
+  const storedLoad = clipLoadAll();
 
   // 녹음된 소리가 있으면 재생하고 true를 돌려준다 (force: 소리 설정이 꺼져 있어도 보호자 확인용으로 재생)
   function playClip(key, force) {
@@ -1604,6 +1636,7 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
         setTimeout(() => sayItem(cat, it, true), 700);
         setTimeout(showWordCard, 700); // 읽어 주는 순간에 맞춰 단어카드가 톡 나타난다
         showDone(el, { rect: board.getBoundingClientRect(), src: canvas, title: cat.id === 'line' ? '잘 그렸어요! 🎉' : '참 잘 썼어요! 🎉',
+          wait: 4500, // 글자 읽어 주기와 단어카드를 볼 시간을 조금 더 준다
           again: { label: cat.id === 'line' ? '▶ 다음 선' : cat.id === 'num' ? '▶ 다음 숫자' : '▶ 다음 글자', go: () => goItem(i + 1) } });
       }
 
@@ -1678,6 +1711,15 @@ button.nav-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--line
 
   makeDemos();
   go('home');
+  // 저장해 둔 가족 사진을 불러와 넣고, 사진이 보이는 화면이면 다시 그린다
+  storedLoad.then((fam) => {
+    const have = new Set(S.photos.map((p) => p.id));
+    const add = fam.filter((v) => !have.has(v.id)).sort((a, b) => a.t - b.t);
+    if (!add.length) return;
+    add.forEach((v) => { const img = new Image(); img.src = v.url; S.photos.push({ id: v.id, name: v.name || '', url: v.url, img, t: v.t }); });
+    S.photos.splice(20);
+    if (S.screen === 'home' || S.screen === 'parent') go(S.screen);
+  });
 })();
 </script>
 </body>
